@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 0 0% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 18%;
+    --primary: 104 39% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 92% 56%;
+    --secondary-foreground: 0 0% 18%;
+    --muted: 40 20% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 14 68% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 20% 90%;
+    --input: 40 20% 90%;
+    --ring: 104 39% 44%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .font-sans {
+    font-family: var(--font-nunito), system-ui, sans-serif;
+  }
+  .font-serif {
+    font-family: var(--font-merriweather), Georgia, serif;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
