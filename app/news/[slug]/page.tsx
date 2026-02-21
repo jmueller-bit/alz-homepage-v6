@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { getNewsBySlug, type NewsEntry } from '@/lib/contentful'
+import { formatDate } from '@/lib/utils'
 
 interface Props {
   params: { slug: string }
@@ -14,66 +16,54 @@ export const metadata: Metadata = {
   description: 'Aktuelle Neuigkeiten und Termine vom Astrid Lindgren Zentrum.',
 }
 
-const newsItems: Record<string, {
-  title: string
-  excerpt: string
-  content: string
-  date: string
-  image: string
-  author?: string
-}> = {
-  'tag-der-offenen-tuer': {
-    title: 'Tag der offenen Tür am 15. März',
-    excerpt: 'Besuchen Sie uns und lernen Sie unser pädagogisches Konzept kennen. Wir freuen uns auf Sie und Ihre Familie!',
-    content: `Wir laden Sie herzlich zu unserem Tag der offenen Tür ein. Lernen Sie unsere Räume kennen, sprechen Sie mit unseren Lehrern und erleben Sie unseren Schulalltag.
+export const dynamic = 'force-dynamic'
+export const revalidate = 120
 
-An diesem Tag haben Sie die Möglichkeit:
-- Unsere Klassenräume zu besichtigen
-- Mit unseren Lehrern zu sprechen
-- Mehr über unser pädagogisches Konzept zu erfahren
-- Sich über unsere Nachmittagsangebote zu informieren
+function renderRichText(content: any) {
+  if (!content) return null
 
-Für das leibliche Wohl ist gesorgt. Wir freuen uns auf Sie und Ihre Familie!
+  // If the editor is plain text or already a string
+  if (typeof content === 'string') {
+    return content.split('\n').map((line, idx) => (
+      <p key={idx} className="mt-3 font-serif text-lg text-charcoal/80">
+        {line}
+      </p>
+    ))
+  }
 
-Datum: 15. März 2026
-Uhrzeit: 10:00 - 16:00 Uhr
-Ort: Astrid Lindgren Zentrum, Mariahilfer Straße 123, 1060 Wien`,
-    date: '15. Februar 2026',
-    image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&h=600&fit=crop',
-  },
-  'theaterprojekt': {
-    title: 'Neues Theaterprojekt startet',
-    excerpt: 'Unsere Schülerinnen und Schüler zeigen im Juni ihr Können in einer eindrucksvollen Aufführung.',
-    content: `Das neue Theaterprojekt steht unter dem Motto "Träume werden wahr". Alle Schüler sind eingeladen, mitzumachen.
+  // Minimal renderer for Contentful Rich Text (paragraphs and headings)
+  const blocks = Array.isArray(content.content) ? content.content : []
 
-In den kommenden Monaten werden wir gemeinsam ein Theaterstück erarbeiten, das Tradition und Moderne verbindet. Die Kinder können Rollen übernehmen, Bühnenbilder gestalten oder bei Technik und Organisation mitarbeiten.
+  return blocks.map((block: any, blockIndex: number) => {
+    if (block.nodeType === 'paragraph') {
+      const text = (block.content || []).map((c: any) => c.value || '').join('')
+      if (!text.trim()) return null
+      return (
+        <p key={blockIndex} className="mt-3 font-serif text-lg text-charcoal/80">
+          {text}
+        </p>
+      )
+    }
 
-Wir freuen uns auf eine tolle Aufführung im Juni!`,
-    date: '10. Februar 2026',
-    image: 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=1200&h=600&fit=crop',
-  },
-  'umweltprojekt-auszeichnung': {
-    title: 'Auszeichnung für Umweltprojekt',
-    excerpt: 'Unsere Schule erhält das ÖkoKids-Zertifikat für nachhaltiges Handeln und Umweltbewusstsein.',
-    content: `Wir sind stolz darauf, das ÖkoKids-Zertifikat erhalten zu haben. Unser Umweltprojekt mit Garten und Kompostierung wurde ausgezeichnet.
+    if (block.nodeType === 'heading-2' || block.nodeType === 'heading-3') {
+      const text = (block.content || []).map((c: any) => c.value || '').join('')
+      const Tag = block.nodeType === 'heading-2' ? 'h2' : 'h3'
+      return (
+        <Tag key={blockIndex} className="mt-6 font-sans text-2xl font-bold text-charcoal">
+          {text}
+        </Tag>
+      )
+    }
 
-Das Projekt umfasst:
-- Schulgarten mit Gemüse und Kräutern
-- Kompostierung von Essensresten
-- Regenwassersammlung
-- Umweltbildungsprojekte
-
-Die Kinder lernen so von klein auf, verantwortungsvoll mit der Natur umzugehen.`,
-    date: '5. Februar 2026',
-    image: 'https://images.unsplash.com/photo-1566251037378-5e04e3bec343?w=1200&h=600&fit=crop',
-  },
+    return null
+  })
 }
 
-export default function NewsDetailPage({ params }: Props) {
-  const news = newsItems[params.slug]
+export default async function NewsDetailPage({ params }: Props) {
+  const news: NewsEntry | null = await getNewsBySlug(params.slug)
 
   if (!news) {
-    notFound()
+    return notFound()
   }
 
   return (
@@ -91,22 +81,25 @@ export default function NewsDetailPage({ params }: Props) {
 
       <article className="py-16 sm:py-24 bg-cream">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="relative aspect-[2/1] overflow-hidden rounded-xl mb-8">
-            <Image
-              src={news.image}
-              alt={news.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+          {news.image && (
+            <div className="relative aspect-[2/1] overflow-hidden rounded-xl mb-8">
+              <Image
+                src={news.image.url}
+                alt={news.title}
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 768px) 100vw, 900px"
+              />
+            </div>
+          )}
 
           <div className="flex items-center gap-4 text-sm text-charcoal/60 mb-4">
-            <time>{news.date}</time>
-            {news.author && (
+            <time>{formatDate(news.date)}</time>
+            {news.category && (
               <>
                 <span>•</span>
-                <span>{news.author}</span>
+                <span className="font-sans text-xs uppercase tracking-wide text-primary">{news.category}</span>
               </>
             )}
           </div>
@@ -115,8 +108,8 @@ export default function NewsDetailPage({ params }: Props) {
             {news.title}
           </h1>
 
-          <div className="mt-8 font-serif text-lg text-charcoal/80 whitespace-pre-line">
-            {news.content}
+          <div className="mt-8 font-serif text-lg text-charcoal/80 space-y-3">
+            {renderRichText(news.content)}
           </div>
 
           <div className="mt-12 pt-8 border-t border-charcoal/10">
