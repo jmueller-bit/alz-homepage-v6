@@ -85,7 +85,7 @@ export async function getNews(limit = 10): Promise<NewsEntry[]> {
   try {
     const entries = await contentfulClient.getEntries({
       content_type: NEWS_CONTENT_TYPE,
-      order: ['-fields.datum', '-fields.publishDate'],
+      order: ['-fields.datum'],
       limit,
     })
 
@@ -116,7 +116,7 @@ export async function getLatestNews(count: number = 3): Promise<NewsEntry[]> {
   try {
     const entries = await contentfulClient.getEntries({
       content_type: NEWS_CONTENT_TYPE,
-      order: ['-fields.datum', '-fields.publishDate'],
+      order: ['-fields.datum'],
       limit: count,
     })
 
