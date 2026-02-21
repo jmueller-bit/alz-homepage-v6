@@ -67,10 +67,10 @@ function mapNewsEntry(entry: any): NewsEntry | null {
     category,
     image: imageFile
       ? {
-          url: imageFile.url?.startsWith('http') ? imageFile.url : `https:${imageFile.url}`,
-          width: imageFile.details?.image?.width,
-          height: imageFile.details?.image?.height,
-        }
+        url: imageFile.url?.startsWith('http') ? imageFile.url : `https:${imageFile.url}`,
+        width: imageFile.details?.image?.width,
+        height: imageFile.details?.image?.height,
+      }
       : undefined,
   }
 }
@@ -126,11 +126,22 @@ function mapTeamEntry(entry: any): TeamEntry | null {
 
   const name = fields.name || fields.titel || fields.vorname || fields.fullName
   const role = fields.funktion || fields.role || fields.rolle || fields.position
-  const bio = fields.bio || fields.beschreibung || fields.text
+  let bio = fields.bio || fields.beschreibung || fields.text
   const order = fields.order ?? fields.reihenfolge
   const photoAsset = fields.photo || fields.foto || fields.bild
 
   if (!name || !role) return null
+
+  // Extract simple text if bio is a Rich Text object
+  if (bio && typeof bio === 'object' && bio.nodeType === 'document') {
+    try {
+      bio = bio.content
+        .map((c: any) => c.content?.map((cc: any) => cc.value || '').join(''))
+        .join('\n')
+    } catch (e) {
+      bio = ''
+    }
+  }
 
   const photoFile = photoAsset?.fields?.file
 
@@ -138,14 +149,14 @@ function mapTeamEntry(entry: any): TeamEntry | null {
     id: entry.sys.id,
     name,
     role,
-    bio,
+    bio: typeof bio === 'string' ? bio : undefined,
     order: typeof order === 'number' ? order : undefined,
     photo: photoFile
       ? {
-          url: photoFile.url?.startsWith('http') ? photoFile.url : `https:${photoFile.url}`,
-          width: photoFile.details?.image?.width,
-          height: photoFile.details?.image?.height,
-        }
+        url: photoFile.url?.startsWith('http') ? photoFile.url : `https:${photoFile.url}`,
+        width: photoFile.details?.image?.width,
+        height: photoFile.details?.image?.height,
+      }
       : undefined,
   }
 }

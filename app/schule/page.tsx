@@ -92,7 +92,7 @@ const activities = [
 export default function SchulePage() {
   return (
     <>
-      <section className="bg-primary py-16 sm:py-24">
+      <section className="bg-schule py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="font-sans text-4xl font-extrabold text-cream sm:text-5xl">
             Unsere Schule
@@ -115,7 +115,7 @@ export default function SchulePage() {
             <Accordion type="single" collapsible className="w-full">
               {schoolLevels.map((level) => (
                 <AccordionItem key={level.id} value={level.id}>
-                  <AccordionTrigger className="font-sans text-lg font-semibold text-charcoal hover:text-primary">
+                  <AccordionTrigger className="font-sans text-lg font-semibold text-charcoal hover:text-schule">
                     {level.title}
                   </AccordionTrigger>
                   <AccordionContent className="font-serif text-charcoal/70">
@@ -147,7 +147,7 @@ export default function SchulePage() {
               <tbody>
                 {dailySchedule.map((item, index) => (
                   <tr key={index} className="border-b border-charcoal/5">
-                    <td className="py-4 pr-4 font-sans font-bold text-primary">{item.time}</td>
+                    <td className="py-4 pr-4 font-sans font-bold text-schule">{item.time}</td>
                     <td className="py-4 font-serif text-charcoal/80">{item.activity}</td>
                   </tr>
                 ))}
@@ -157,7 +157,7 @@ export default function SchulePage() {
         </div>
       </section>
 
-      <section className="py-16 sm:py-24 bg-primary/5">
+      <section className="py-16 sm:py-24 bg-schule-light">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-sans text-3xl font-bold text-charcoal sm:text-4xl">
             Unser Angebot
@@ -168,7 +168,7 @@ export default function SchulePage() {
           <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {activities.map((activity) => (
               <div key={activity.title} className="rounded-xl bg-white p-8 shadow-md">
-                <h3 className="font-sans text-xl font-bold text-primary">
+                <h3 className="font-sans text-xl font-bold text-schule">
                   {activity.title}
                 </h3>
                 <p className="mt-2 font-serif text-charcoal/70">
