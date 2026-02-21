@@ -22,27 +22,16 @@ export type NewsEntry = {
   category?: string
 }
 
-export interface TeamMember {
-  sys: {
-    id: string
-  }
-  fields: {
-    name: string
-    role: string
-    bio?: string
-    photo?: {
-      fields: {
-        file: {
-          url: string
-          details: {
-            image: {
-              width: number
-              height: number
-            }
-          }
-        }
-      }
-    }
+export type TeamEntry = {
+  id: string
+  name: string
+  role: string
+  bio?: string
+  order?: number
+  photo?: {
+    url: string
+    width?: number
+    height?: number
   }
 }
 
@@ -127,15 +116,58 @@ export async function getLatestNews(count: number = 3): Promise<NewsEntry[]> {
   }
 }
 
-export async function getTeamMembers(): Promise<TeamMember[]> {
-  try {
-    const entries = await contentfulClient.getEntries({
-      content_type: 'teamMember',
-      order: ['fields.order'],
-    })
-    return entries.items as unknown as TeamMember[]
-  } catch (error) {
-    console.error('Error fetching team members:', error)
-    return []
+function mapTeamEntry(entry: any): TeamEntry | null {
+  const fields = entry.fields as Record<string, any>
+
+  const name = fields.name || fields.titel || fields.vorname || fields.fullName
+  const role = fields.role || fields.rolle || fields.position
+  const bio = fields.bio || fields.beschreibung || fields.text
+  const order = fields.order ?? fields.reihenfolge
+  const photoAsset = fields.photo || fields.foto || fields.bild
+
+  if (!name || !role) return null
+
+  const photoFile = photoAsset?.fields?.file
+
+  return {
+    id: entry.sys.id,
+    name,
+    role,
+    bio,
+    order: typeof order === 'number' ? order : undefined,
+    photo: photoFile
+      ? {
+          url: photoFile.url?.startsWith('http') ? photoFile.url : `https:${photoFile.url}`,
+          width: photoFile.details?.image?.width,
+          height: photoFile.details?.image?.height,
+        }
+      : undefined,
   }
+}
+
+export async function getTeamMembers(): Promise<TeamEntry[]> {
+  const contentTypes = ['teamMitglied']
+
+  for (const contentType of contentTypes) {
+    try {
+      const entries = await contentfulClient.getEntries({
+        content_type: contentType,
+        limit: 50,
+      })
+
+      const mapped = entries.items.map(mapTeamEntry).filter(Boolean) as TeamEntry[]
+      if (mapped.length > 0) {
+        return mapped.sort((a, b) => {
+          const aOrder = a.order ?? Number.MAX_SAFE_INTEGER
+          const bOrder = b.order ?? Number.MAX_SAFE_INTEGER
+          if (aOrder !== bOrder) return aOrder - bOrder
+          return a.name.localeCompare(b.name)
+        })
+      }
+    } catch (error) {
+      console.error(`Error fetching team members for ${contentType}:`, error)
+    }
+  }
+
+  return []
 }

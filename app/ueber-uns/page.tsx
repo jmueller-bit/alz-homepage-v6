@@ -1,52 +1,18 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Quote } from 'lucide-react'
+import { getTeamMembers, type TeamEntry } from '@/lib/contentful'
 
 export const metadata: Metadata = {
   title: 'Über uns',
   description: 'Das Astrid Lindgren Zentrum - Eine Privatschule mit Tradition und Innovation. Erfahren Sie mehr über unsere Geschichte, unser pädagogisches Konzept und unser Team.',
 }
 
-const teamMembers = [
-  {
-    name: 'Dr. Maria Schmidt',
-    role: 'Schuldirektorin',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop',
-    bio: 'Pädagogin mit 20 Jahren Erfahrung, promoviert in Bildungswissenschaften.',
-  },
-  {
-    name: 'Thomas Weber',
-    role: 'Stellvertretender Direktor',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-    bio: 'Lehrer für Mathematik und Physik, Spezialist für digitale Bildung.',
-  },
-  {
-    name: 'Anna Berger',
-    role: 'Klassenlehrerin',
-    image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop',
-    bio: 'Grundschulpädagogin mit Fokus auf elementare Pädagogik.',
-  },
-  {
-    name: 'Michael Koch',
-    role: 'Kunst & Musik',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-    bio: 'Künstler und Musiker, lebt Kreativität täglich.',
-  },
-  {
-    name: 'Sarah Fischer',
-    role: 'Sport & Bewegung',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
-    bio: 'Sportpädagogin und ausgebildete Yoga-Lehrerin.',
-  },
-  {
-    name: 'Lukas Müller',
-    role: 'Naturwissenschaften',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
-    bio: 'Biologe und Chemiker mit Leidenschaft für Forschung.',
-  },
-]
+export const revalidate = 300
 
-export default function UeberUnsPage() {
+export default async function UeberUnsPage() {
+  const teamMembers: TeamEntry[] = await getTeamMembers()
+
   return (
     <>
       <section className="bg-primary py-16 sm:py-24">
@@ -163,18 +129,32 @@ export default function UeberUnsPage() {
             Lernen Sie die Menschen kennen, die jeden Tag für Ihre Kinder da sind.
           </p>
           <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {teamMembers.length === 0 && (
+              <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-charcoal/10 bg-white p-8 text-center shadow-sm">
+                <p className="font-sans text-lg text-charcoal">Aktuell sind keine Teammitglieder veröffentlicht.</p>
+                <p className="mt-2 font-serif text-charcoal/70">Sobald Inhalte in Contentful bereitstehen, erscheinen sie hier.</p>
+              </div>
+            )}
+
             {teamMembers.map((member) => (
               <div
-                key={member.name}
+                key={member.id}
                 className="group rounded-xl bg-white p-6 shadow-md transition-shadow hover:shadow-lg"
               >
                 <div className="relative aspect-square overflow-hidden rounded-full">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+                  {member.photo ? (
+                    <Image
+                      src={member.photo.url}
+                      alt={member.name}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="200px"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
+                      <span className="font-sans font-bold">{member.name.charAt(0)}</span>
+                    </div>
+                  )}
                 </div>
                 <h3 className="mt-6 font-sans text-xl font-bold text-charcoal">
                   {member.name}
@@ -182,9 +162,11 @@ export default function UeberUnsPage() {
                 <p className="font-sans text-sm font-semibold text-primary">
                   {member.role}
                 </p>
-                <p className="mt-2 font-serif text-sm text-charcoal/70">
-                  {member.bio}
-                </p>
+                {member.bio && (
+                  <p className="mt-2 font-serif text-sm text-charcoal/70">
+                    {member.bio}
+                  </p>
+                )}
               </div>
             ))}
           </div>
