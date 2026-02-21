@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Schule',
@@ -13,41 +14,49 @@ const schoolLevels = [
     id: 'item-1',
     title: 'Vorschule (4-6 Jahre)',
     content: 'In unserer Vorschule werden Kinder spielerisch auf die Schulzeit vorbereitet. Wir fördern Feinmotorik, Sozialverhalten und erste mathematische Konzepte durch altersgerechte Aktivitäten.',
+    colorClass: 'data-[state=open]:text-primaria1'
   },
   {
     id: 'item-2',
     title: '1. Schulstufe (6-7 Jahre)',
     content: 'Der Übergang vom Kindergarten zur Schule wird sanft gestaltet. Lesen, Schreiben und Rechnen werden mit viel Bewegung und Kreativität verbunden.',
+    colorClass: 'data-[state=open]:text-primaria1'
   },
   {
     id: 'item-3',
     title: '2. Schulstufe (7-8 Jahre)',
     content: 'Die Kinder vertiefen ihre Grundkenntnisse und entdecken erste naturwissenschaftliche Themen. Projektarbeit spielt eine zentrale Rolle.',
+    colorClass: 'data-[state=open]:text-primaria1'
   },
   {
     id: 'item-4',
     title: '3. Schulstufe (8-9 Jahre)',
     content: 'Selbstständiges Lernen wird gefördert. Die Kinder lernen, eigene Projekte zu planen und durchzuführen.',
+    colorClass: 'data-[state=open]:text-primaria1'
   },
   {
     id: 'item-5',
     title: '4. Schulstufe (9-10 Jahre)',
     content: 'Vorbereitung auf den Übertritt in die Sekundarstufe. Besonderer Fokus auf Lernstrategien und Selbstorganisation.',
+    colorClass: 'data-[state=open]:text-primaria2'
   },
   {
     id: 'item-6',
     title: '5.-6. Schulstufe (10-12 Jahre)',
     content: 'Die Sekundarstufe beginnt. Neben vertieftem Fachwissen werden auch soziale Kompetenzen und kritisches Denken gefördert.',
+    colorClass: 'data-[state=open]:text-sekundaria1'
   },
   {
     id: 'item-7',
     title: '7.-8. Schulstufe (12-14 Jahre)',
     content: 'Pubertätsbegleitung ist uns wichtig. Die Schüler werden in ihrer Entwicklung unterstützt und auf weiterführende Schulen vorbereitet.',
+    colorClass: 'data-[state=open]:text-sekundaria2'
   },
   {
     id: 'item-8',
     title: '9. Schulstufe (14-15 Jahre)',
     content: 'Abschluss der Pflichtschule. Berufsorientierung und Vorbereitung auf die Oberstufe stehen im Mittelpunkt.',
+    colorClass: 'data-[state=open]:text-sekundaria2'
   },
 ]
 
@@ -92,12 +101,12 @@ const activities = [
 export default function SchulePage() {
   return (
     <>
-      <section className="bg-schule py-16 sm:py-24">
+      <section className="bg-secondary py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="font-sans text-4xl font-extrabold text-cream sm:text-5xl">
+          <h1 className="font-sans text-4xl font-extrabold text-charcoal sm:text-5xl">
             Unsere Schule
           </h1>
-          <p className="mt-4 font-serif text-xl text-cream/80 max-w-2xl">
+          <p className="mt-4 font-serif text-xl text-charcoal/80 max-w-2xl">
             Von der Vorschule bis zur 9. Schulstufe - ein kompletter Bildungsweg
           </p>
         </div>
@@ -115,7 +124,7 @@ export default function SchulePage() {
             <Accordion type="single" collapsible className="w-full">
               {schoolLevels.map((level) => (
                 <AccordionItem key={level.id} value={level.id}>
-                  <AccordionTrigger className="font-sans text-lg font-semibold text-charcoal hover:text-schule">
+                  <AccordionTrigger className={cn("font-sans text-lg font-semibold text-charcoal transition-colors hover:text-charcoal/80", level.colorClass)}>
                     {level.title}
                   </AccordionTrigger>
                   <AccordionContent className="font-serif text-charcoal/70">

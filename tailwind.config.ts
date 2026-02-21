@@ -78,6 +78,10 @@ module.exports = {
           mid: '#9d79a5',
           light: '#e2d0e7',
         },
+        primaria1: '#e66849',
+        primaria2: '#f6c300',
+        sekundaria1: '#75b250',
+        sekundaria2: '#40b9d6',
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
