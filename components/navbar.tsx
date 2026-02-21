@@ -2,9 +2,10 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, BookOpen } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -29,11 +30,17 @@ export function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-cream/95 backdrop-blur-sm border-b border-primary/10">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Hauptnavigation">
         <div className="flex h-20 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" aria-label="Astrid Lindgren Zentrum Startseite">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
-              <BookOpen className="h-6 w-6 text-white" aria-hidden="true" />
+          <Link href="/" className="flex items-center gap-3" aria-label="Astrid Lindgren Zentrum Startseite">
+            <div className="relative h-12 w-[46px] flex-shrink-0">
+              <Image
+                src="/ALZ_Logo_Header_Retina.png"
+                alt="ALZ Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="font-sans text-xl font-extrabold text-primary">
+            <span className="font-sans text-xl font-extrabold text-charcoal hidden sm:inline-block">
               Astrid Lindgren Zentrum
             </span>
           </Link>
