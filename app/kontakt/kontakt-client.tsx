@@ -32,12 +32,13 @@ const contactInfo = [
 ]
 
 // Breitenfurter Straße 401-413, 1230 Wien (Liesing)
-// Koordinaten: 48.140556, 16.285278
+// Plus Code: 47QF+5J Wien
+// Koordinaten: 48.140625, 16.285417
 const MAP_COORDS = {
-  lat: 48.140556,
-  lng: 16.285278,
+  lat: 48.140625,
+  lng: 16.285417,
   bbox: '16.2830%2C48.1385%2C16.2880%2C48.1425',
-  marker: '48.140556%2C16.285278',
+  marker: '48.140625%2C16.285417',
 }
 
 export default function KontaktClient() {
