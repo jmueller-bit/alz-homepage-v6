@@ -76,6 +76,16 @@ function mapNewsEntry(entry: any): NewsEntry | null {
 }
 
 export async function getNews(limit = 10): Promise<NewsEntry[]> {
+  if (!process.env.CONTENTFUL_SPACE_ID || process.env.CONTENTFUL_SPACE_ID === 'TODO') {
+    return [{
+      id: 'env-error',
+      title: '🚨 Server-Fehler: Contentful Variablen fehlen',
+      slug: 'fehlende-konfiguration',
+      excerpt: 'Die Umgebungsvariablen CONTENTFUL_SPACE_ID und CONTENTFUL_ACCESS_TOKEN sind auf Vercel/Coolify nicht gesetzt. Bitte im Dashboard eintragen und einen Rebuild anstoßen!',
+      date: new Date().toISOString(),
+    }]
+  }
+
   try {
     const entries = await contentfulClient.getEntries({
       content_type: NEWS_CONTENT_TYPE,
@@ -84,9 +94,15 @@ export async function getNews(limit = 10): Promise<NewsEntry[]> {
     })
 
     return (entries.items.map(mapNewsEntry).filter(Boolean) as NewsEntry[]) || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching news:', error)
-    return []
+    return [{
+      id: 'api-error',
+      title: '🚨 Verbindung zu Contentful fehlgeschlagen',
+      slug: 'api-error',
+      excerpt: `Der Server konnte die News nicht von Contentful laden. Details: ${error?.message || 'Unbekannter Fehler'}. Prüfe ob die Zugangsdaten im Server Dashboard korrekt sind.`,
+      date: new Date().toISOString(),
+    }]
   }
 }
 
@@ -107,6 +123,16 @@ export async function getNewsBySlug(slug: string): Promise<NewsEntry | null> {
 }
 
 export async function getLatestNews(count: number = 3): Promise<NewsEntry[]> {
+  if (!process.env.CONTENTFUL_SPACE_ID || process.env.CONTENTFUL_SPACE_ID === 'TODO') {
+    return [{
+      id: 'env-error',
+      title: '🚨 Server-Fehler: Contentful Variablen fehlen',
+      slug: 'fehlende-konfiguration',
+      excerpt: 'Die Umgebungsvariablen CONTENTFUL_SPACE_ID und CONTENTFUL_ACCESS_TOKEN sind auf Vercel/Coolify nicht gesetzt. Bitte im Dashboard eintragen und einen Rebuild anstoßen!',
+      date: new Date().toISOString(),
+    }]
+  }
+
   try {
     const entries = await contentfulClient.getEntries({
       content_type: NEWS_CONTENT_TYPE,
@@ -115,9 +141,15 @@ export async function getLatestNews(count: number = 3): Promise<NewsEntry[]> {
     })
 
     return (entries.items.map(mapNewsEntry).filter(Boolean) as NewsEntry[]) || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching latest news:', error)
-    return []
+    return [{
+      id: 'api-error',
+      title: '🚨 Verbindung zu Contentful fehlgeschlagen',
+      slug: 'api-error',
+      excerpt: `Der Server konnte die News nicht von Contentful laden. Details: ${error?.message || 'Unbekannter Fehler'}. Prüfe ob die Zugangsdaten im Server Dashboard korrekt sind.`,
+      date: new Date().toISOString(),
+    }]
   }
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, MapPin, Phone, Clock, Send } from 'lucide-react'
+import { Mail, MapPin, Phone, Clock, Send, Train, Bus, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,24 +12,33 @@ const contactInfo = [
   {
     icon: MapPin,
     title: 'Adresse',
-    content: 'Mariahilfer Straße 123\n1060 Wien',
+    content: 'Breitenfurter Straße 401-413/1/R02\n1230 Wien',
   },
   {
     icon: Phone,
     title: 'Telefon',
-    content: '+43 1 234 5678',
+    content: '+43 1 887 40 53',
   },
   {
     icon: Mail,
     title: 'E-Mail',
-    content: 'info@astrid-lindgren-zentrum.at',
+    content: 'office@astrid-lindgren-zentrum.at',
   },
   {
     icon: Clock,
     title: 'Öffnungszeiten',
-    content: 'Mo-Fr: 07:30 - 17:00 Uhr',
+    content: 'Mo-Fr: 08:00 - 17:00 Uhr',
   },
 ]
+
+// Breitenfurter Straße 401-413, 1230 Wien (Liesing)
+// Koordinaten: 48.140556, 16.285278
+const MAP_COORDS = {
+  lat: 48.140556,
+  lng: 16.285278,
+  bbox: '16.2830%2C48.1385%2C16.2880%2C48.1425',
+  marker: '48.140556%2C16.285278',
+}
 
 export default function KontaktClient() {
   const [formData, setFormData] = useState({
@@ -58,6 +67,10 @@ export default function KontaktClient() {
     })
   }
 
+  const mapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${MAP_COORDS.bbox}&layer=mapnik&marker=${MAP_COORDS.marker}`
+  const mapExternalUrl = `https://www.openstreetmap.org/?mlat=${MAP_COORDS.lat}&mlon=${MAP_COORDS.lng}#map=17/${MAP_COORDS.lat}/${MAP_COORDS.lng}`
+  const googleMapsUrl = `https://maps.google.com/maps?q=${MAP_COORDS.lat},${MAP_COORDS.lng}`
+
   return (
     <>
       <section className="bg-primary py-16 sm:py-24">
@@ -75,6 +88,18 @@ export default function KontaktClient() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
             <div>
+              <div className="mb-8">
+                <h2 className="font-sans text-2xl font-bold text-charcoal">
+                  Astrid Lindgren Zentrum
+                </h2>
+                <p className="mt-2 font-serif text-charcoal/70">
+                  Verein für Pädagogik und Kultur
+                </p>
+                <p className="mt-1 font-serif text-sm text-charcoal/60">
+                  ZVR: 960385266
+                </p>
+              </div>
+
               <h2 className="font-sans text-2xl font-bold text-charcoal">
                 Kontaktinformationen
               </h2>
@@ -112,6 +137,40 @@ export default function KontaktClient() {
                 <p className="mt-4 font-serif text-charcoal/70">
                   Die Anmeldung für das nächste Schuljahr beginnt jeweils im Jänner.
                 </p>
+              </div>
+
+              <div className="mt-12">
+                <h2 className="font-sans text-2xl font-bold text-charcoal flex items-center gap-2">
+                  <Train className="h-6 w-6 text-primary" />
+                  So kommen Sie zu uns
+                </h2>
+                <div className="mt-6 space-y-4">
+                  <Card className="border-0 shadow-md">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                          <Train className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-sans font-semibold text-charcoal">
+                            Öffentliche Verkehrsmittel
+                          </h3>
+                          <p className="mt-2 font-serif text-charcoal/70">
+                            <strong>S-Bahn:</strong> Bahnhof Liesing<br />
+                            <strong>Straßenbahn:</strong> Linie 60<br />
+                            <strong>Bus:</strong> 60A, 253, 259, 354
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <p className="font-serif text-sm text-amber-800">
+                      <strong>Hinweis:</strong> Der Eingang befindet sich an der Breitenfurter Straße fast unter dem Aquädukt (an der Ecke), neben dem Städtischen Kindergarten.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -215,13 +274,33 @@ export default function KontaktClient() {
             </h2>
             <div className="mt-6 aspect-[16/9] w-full overflow-hidden rounded-xl bg-gray-100">
               <iframe
-                src="https://www.openstreetmap.org/export/embed.html?bbox=16.35%2C48.18%2C16.37%2C48.20&amp;layer=mapnik"
+                src={mapEmbedUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
-                title="Standortkarte"
+                title="Standortkarte - Astrid Lindgren Zentrum"
                 loading="lazy"
               />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-4">
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-sans text-sm"
+              >
+                <ExternalLink className="h-4 w-4" />
+                In Google Maps öffnen
+              </a>
+              <a
+                href={mapExternalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-sans text-sm"
+              >
+                <ExternalLink className="h-4 w-4" />
+                In OpenStreetMap öffnen
+              </a>
             </div>
           </div>
         </div>

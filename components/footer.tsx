@@ -17,10 +17,10 @@ const footerLinks = {
 }
 
 const contactInfo = {
-  address: 'Mariahilfer Straße 123',
-  city: '1060 Wien',
-  phone: '+43 1 234 5678',
-  email: 'info@astrid-lindgren-zentrum.at',
+  address: 'Breitenfurter Straße 401-413/1/R02',
+  city: '1230 Wien',
+  phone: '+43 1 887 40 53',
+  email: 'office@astrid-lindgren-zentrum.at',
 }
 
 export function Footer() {
