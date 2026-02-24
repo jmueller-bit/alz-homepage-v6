@@ -48,6 +48,7 @@ export type GalleryImage = {
   alt: string
   category: string
   order: number
+  description?: string
   width?: number
   height?: number
 }
