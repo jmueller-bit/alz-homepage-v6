@@ -1,6 +1,7 @@
 import { createClient } from 'contentful'
 
 const NEWS_CONTENT_TYPE = 'newsArtikel'
+const GALLERY_CONTENT_TYPE = 'galleryImage'
 
 export const contentfulClient = createClient({
   space: process.env.CONTENTFUL_SPACE_ID || 'TODO',
@@ -38,6 +39,17 @@ export type TeamEntry = {
     width?: number
     height?: number
   }
+}
+
+export type GalleryImage = {
+  id: string
+  title: string
+  src: string
+  alt: string
+  category: string
+  order: number
+  width?: number
+  height?: number
 }
 
 function mapNewsEntry(entry: any): NewsEntry | null {
@@ -193,6 +205,43 @@ function mapTeamEntry(entry: any): TeamEntry | null {
   }
 }
 
+function mapGalleryImage(entry: any): GalleryImage | null {
+  const fields = entry.fields as Record<string, any>
+
+  const title = fields.titel
+  const category = fields.kategorie || 'Allgemein'
+  const order = fields.reihenfolge ?? 0
+  
+  // Handle bild array (Contentful Asset array)
+  const bildArray = fields.bild
+  let imageAsset = null
+  
+  if (Array.isArray(bildArray) && bildArray.length > 0) {
+    imageAsset = bildArray[0]
+  } else if (bildArray?.sys) {
+    imageAsset = bildArray
+  }
+
+  const imageFile = imageAsset?.fields?.file
+
+  if (!title || !imageFile) {
+    return null
+  }
+
+  const imageUrl = imageFile.url?.startsWith('http') ? imageFile.url : `https:${imageFile.url}`
+
+  return {
+    id: entry.sys.id,
+    title,
+    src: imageUrl,
+    alt: title,
+    category,
+    order: typeof order === 'number' ? order : 0,
+    width: imageFile.details?.image?.width,
+    height: imageFile.details?.image?.height,
+  }
+}
+
 export async function getTeamMembers(): Promise<TeamEntry[]> {
   const contentTypes = ['teamMitglied']
 
@@ -218,4 +267,25 @@ export async function getTeamMembers(): Promise<TeamEntry[]> {
   }
 
   return []
+}
+
+export async function getGalleryImages(limit = 50): Promise<GalleryImage[]> {
+  if (!process.env.CONTENTFUL_SPACE_ID || process.env.CONTENTFUL_SPACE_ID === 'TODO') {
+    console.warn('⚠️ Gallery: CONTENTFUL_SPACE_ID not set, returning empty array')
+    return []
+  }
+
+  try {
+    const entries = await contentfulClient.getEntries({
+      content_type: GALLERY_CONTENT_TYPE,
+      order: ['fields.reihenfolge'],
+      limit,
+    })
+
+    return (entries.items.map(mapGalleryImage).filter(Boolean) as GalleryImage[])
+      .sort((a, b) => a.order - b.order)
+  } catch (error: any) {
+    console.error('Error fetching gallery images:', error)
+    return []
+  }
 }

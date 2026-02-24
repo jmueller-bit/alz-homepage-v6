@@ -3,67 +3,68 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, ZoomIn, ImageOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import type { GalleryImage } from '@/lib/contentful'
 
-const galleryImages = [
+interface GalerieClientProps {
+  initialImages: GalleryImage[]
+}
+
+// Fallback images wenn Contentful keine Bilder liefert
+const fallbackImages = [
   {
-    id: 1,
+    id: '1',
     src: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=600&fit=crop',
     alt: 'Kinder beim Lernen',
     category: 'Unterricht',
+    title: 'Kinder beim Lernen',
+    order: 1,
   },
   {
-    id: 2,
+    id: '2',
     src: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&h=600&fit=crop',
     alt: 'Schulhof',
     category: 'Schule',
+    title: 'Schulhof',
+    order: 2,
   },
   {
-    id: 3,
+    id: '3',
     src: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&h=600&fit=crop',
     alt: 'Kinder beim Spielen',
     category: 'Aktivitäten',
+    title: 'Kinder beim Spielen',
+    order: 3,
   },
   {
-    id: 4,
+    id: '4',
     src: 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800&h=600&fit=crop',
     alt: 'Musikunterricht',
     category: 'Kunst',
+    title: 'Musikunterricht',
+    order: 4,
   },
   {
-    id: 5,
+    id: '5',
     src: 'https://images.unsplash.com/photo-1566251037378-5e04e3bec343?w=800&h=600&fit=crop',
     alt: 'Gartenprojekt',
     category: 'Natur',
+    title: 'Gartenprojekt',
+    order: 5,
   },
   {
-    id: 6,
+    id: '6',
     src: 'https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?w=800&h=600&fit=crop',
     alt: 'Sport',
     category: 'Sport',
-  },
-  {
-    id: 7,
-    src: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&h=600&fit=crop',
-    alt: 'Kinder lesen',
-    category: 'Unterricht',
-  },
-  {
-    id: 8,
-    src: 'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?w=800&h=600&fit=crop',
-    alt: 'Kreatives Gestalten',
-    category: 'Kunst',
-  },
-  {
-    id: 9,
-    src: 'https://images.unsplash.com/photo-1588072432836-e10032774350?w=800&h=600&fit=crop',
-    alt: 'Klassenzimmer',
-    category: 'Schule',
+    title: 'Sport',
+    order: 6,
   },
 ]
 
-export default function GalerieClient() {
+export default function GalerieClient({ initialImages }: GalerieClientProps) {
+  const galleryImages = initialImages.length > 0 ? initialImages : fallbackImages
   const [selectedImage, setSelectedImage] = useState<number | null>(null)
 
   const openLightbox = (index: number) => {
@@ -103,34 +104,54 @@ export default function GalerieClient() {
 
       <section className="py-16 sm:py-24 bg-cream">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {galleryImages.map((image, index) => (
-              <motion.div
-                key={image.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100"
-                onClick={() => openLightbox(index)}
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/30" />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-                  <ZoomIn className="h-10 w-10 text-white" />
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+          {galleryImages.length === 0 ? (
+            <div className="text-center py-12">
+              <ImageOff className="mx-auto h-12 w-12 text-charcoal/30" />
+              <p className="mt-4 font-sans text-lg text-charcoal">
+                Derzeit sind keine Bilder in der Galerie verfügbar.
+              </p>
+              <p className="mt-2 font-serif text-charcoal/70">
+                Sobald neue Bilder hinzugefügt werden, erscheinen sie hier automatisch.
+              </p>
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {galleryImages.map((image, index) => (
+                <motion.div
+                  key={image.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100"
+                  onClick={() => openLightbox(index)}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/30" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                    <ZoomIn className="h-10 w-10 text-white" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
+                    <p className="font-sans text-sm font-medium text-white">
+                      {image.title}
+                    </p>
+                    <p className="font-serif text-xs text-white/80">
+                      {image.category}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </section>
 
@@ -168,9 +189,14 @@ export default function GalerieClient() {
                 height={800}
                 className="max-h-[90vh] w-auto object-contain"
               />
-              <p className="absolute -bottom-10 left-0 right-0 text-center text-white">
-                {galleryImages[selectedImage].alt}
-              </p>
+              <div className="absolute -bottom-16 left-0 right-0 text-center">
+                <p className="font-sans font-medium text-white">
+                  {galleryImages[selectedImage].title}
+                </p>
+                <p className="font-serif text-sm text-white/70">
+                  {galleryImages[selectedImage].category}
+                </p>
+              </div>
             </motion.div>
 
             <Button
