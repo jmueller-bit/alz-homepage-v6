@@ -1,6 +1,43 @@
 import { revalidatePath } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 
+// GET handler for testing in browser
+export async function GET(request: NextRequest) {
+  const secret = request.headers.get('x-revalidate-secret') || request.nextUrl.searchParams.get('secret')
+  
+  if (!secret) {
+    return NextResponse.json({
+      status: 'ok',
+      message: 'Revalidation API is running',
+      hint: 'Use POST with x-revalidate-secret header or ?secret= parameter to trigger revalidation',
+      timestamp: new Date().toISOString()
+    })
+  }
+  
+  if (secret !== process.env.REVALIDATE_SECRET) {
+    return NextResponse.json(
+      { error: 'Invalid secret' },
+      { status: 401 }
+    )
+  }
+  
+  try {
+    revalidatePath('/news')
+    revalidatePath('/')
+    
+    return NextResponse.json({
+      revalidated: true,
+      message: 'All news pages revalidated successfully (via GET)',
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to revalidate' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verify secret token
