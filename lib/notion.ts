@@ -202,20 +202,20 @@ export function blocksToHtml(blocks: any[]): string {
 function mapNotionPage(page: any): NewsEntry | null {
   const properties = page.properties
   
-  // Extract properties
+  // Extract properties (Deutsche Namen wie in Notion)
   const titleProperty = properties.Titel?.title
   const slugProperty = properties.Slug?.rich_text
   const dateProperty = properties.Datum?.date
   const categoryProperty = properties.Kategorie?.select
-  const statusProperty = properties.Status?.select
-  const excerptProperty = properties.Vorschautext?.rich_text
-  const imageProperty = properties.Bild?.files
+  const statusProperty = properties.Veröffentlicht?.checkbox
+  const excerptProperty = properties.Beschreibung?.rich_text
+  const imageProperty = properties.foto?.files
   
   const title = titleProperty ? extractPlainText(titleProperty) : ''
   const slug = slugProperty ? extractPlainText(slugProperty) : ''
   const date = dateProperty?.start || new Date().toISOString()
-  const category = categoryProperty?.name || 'Allgemein'
-  const status = statusProperty?.name || 'Draft'
+  const category = categoryProperty?.select?.name || 'Allgemein'
+  const isPublished = statusProperty?.checkbox || false
   const excerpt = excerptProperty ? extractPlainText(excerptProperty) : ''
   
   // Get image from files property
@@ -243,7 +243,7 @@ function mapNotionPage(page: any): NewsEntry | null {
     excerpt,
     date,
     category,
-    status: status as 'Published' | 'Draft' | 'Archived',
+    status: isPublished ? 'Published' : 'Draft',
     image,
   }
 }
@@ -267,9 +267,9 @@ export async function getNews(limit = 10): Promise<NewsEntry[]> {
       filter: {
         and: [
           {
-            property: 'Status',
-            select: {
-              equals: 'Published',
+            property: 'Veröffentlicht',
+            checkbox: {
+              equals: true,
             },
           },
         ],
@@ -318,9 +318,9 @@ export async function getNewsBySlug(slug: string): Promise<NewsEntry | null> {
             },
           },
           {
-            property: 'Status',
-            select: {
-              equals: 'Published',
+            property: 'Veröffentlicht',
+            checkbox: {
+              equals: true,
             },
           },
         ],
