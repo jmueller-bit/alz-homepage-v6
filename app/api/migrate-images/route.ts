@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob';
+import { put, del, list } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { notionClient, NOTION_DATABASE_ID } from '@/lib/notion';
@@ -103,6 +103,60 @@ export async function POST(request: NextRequest) {
     console.error('Migration error:', error);
     return NextResponse.json(
       { error: 'Migration failed', details: (error as Error).message },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE handler to delete all migrated images
+export async function DELETE(request: NextRequest) {
+  try {
+    // Verify secret
+    const secret = request.headers.get('x-revalidate-secret') || 
+                   request.nextUrl.searchParams.get('secret');
+    
+    if (secret !== process.env.REVALIDATE_SECRET) {
+      return NextResponse.json(
+        { error: 'Invalid secret' },
+        { status: 401 }
+      );
+    }
+
+    // List all blobs in the news folder
+    const { blobs } = await list({ prefix: 'news/' });
+    
+    const deleted = [];
+    const failed = [];
+    
+    // Delete each blob
+    for (const blob of blobs) {
+      try {
+        await del(blob.url);
+        deleted.push(blob.pathname);
+        console.log(`🗑️ Deleted: ${blob.pathname}`);
+      } catch (error) {
+        failed.push({ pathname: blob.pathname, error: (error as Error).message });
+        console.error(`❌ Failed to delete: ${blob.pathname}`, error);
+      }
+    }
+
+    // Revalidate news pages
+    revalidatePath('/news');
+    revalidatePath('/');
+    
+    return NextResponse.json({
+      success: true,
+      deleted: deleted.length,
+      failed: failed.length,
+      deletedFiles: deleted,
+      failedFiles: failed,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Delete error:', error);
+    return NextResponse.json(
+      { error: 'Delete failed', details: (error as Error).message },
       { status: 500 }
     );
   }
