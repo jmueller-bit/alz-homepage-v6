@@ -42,7 +42,7 @@ export default async function NewsPage() {
               {newsItems.map((news) => (
                 <Link key={news.id} href={`/news/${news.slug}`}>
                   <Card className="h-full overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
-                    {news.image && (
+                    {news.image ? (
                       <div className="relative aspect-[3/2] overflow-hidden">
                         <Image
                           src={news.image.url}
@@ -50,7 +50,12 @@ export default async function NewsPage() {
                           fill
                           className="object-cover transition-transform duration-300 hover:scale-105"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          unoptimized
                         />
+                      </div>
+                    ) : (
+                      <div className="relative aspect-[3/2] overflow-hidden bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-400 text-sm">Kein Bild</span>
                       </div>
                     )}
                     <CardContent className="p-6">
