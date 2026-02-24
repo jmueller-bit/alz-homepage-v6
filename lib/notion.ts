@@ -232,9 +232,18 @@ function mapNotionPage(page: any): NewsEntry | null {
   // Generate slug from title (since Slug property doesn't exist in Notion)
   const slug = generateSlug(title)
   
+  // Check for Vercel Blob URL first (permanent), fallback to Notion URL (temporary)
+  const vercelBlobUrl = properties.vercelBlobUrl?.url?.url
+  
   // Get image from files property
   let image = undefined
-  if (imageProperty && imageProperty.length > 0) {
+  if (vercelBlobUrl) {
+    image = {
+      url: vercelBlobUrl,
+      width: undefined,
+      height: undefined,
+    }
+  } else if (imageProperty && imageProperty.length > 0) {
     const file = imageProperty[0]
     const imageUrl = file.file?.url || file.external?.url
     if (imageUrl) {
