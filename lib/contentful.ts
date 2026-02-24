@@ -213,18 +213,19 @@ function mapGalleryImage(entry: any): GalleryImage | null {
   const order = fields.reihenfolge ?? 0
   
   // Handle bild array (Contentful Asset array)
+  // Contentful resolves linked assets automatically when using include
   const bildArray = fields.bild
   let imageAsset = null
   
   if (Array.isArray(bildArray) && bildArray.length > 0) {
+    // Asset is already resolved by Contentful client
     imageAsset = bildArray[0]
-  } else if (bildArray?.sys) {
-    imageAsset = bildArray
   }
 
   const imageFile = imageAsset?.fields?.file
 
   if (!title || !imageFile) {
+    console.warn('Gallery image missing title or file:', entry.sys.id)
     return null
   }
 
@@ -280,6 +281,7 @@ export async function getGalleryImages(limit = 50): Promise<GalleryImage[]> {
       content_type: GALLERY_CONTENT_TYPE,
       order: ['fields.reihenfolge'],
       limit,
+      include: 1, // Include linked assets
     })
 
     return (entries.items.map(mapGalleryImage).filter(Boolean) as GalleryImage[])
