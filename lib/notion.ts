@@ -198,25 +198,39 @@ export function blocksToHtml(blocks: any[]): string {
   return html
 }
 
+// Helper: Generate slug from title
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[ä]/g, 'ae')
+    .replace(/[ö]/g, 'oe')
+    .replace(/[ü]/g, 'ue')
+    .replace(/[ß]/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 // Map Notion page to NewsEntry
 function mapNotionPage(page: any): NewsEntry | null {
   const properties = page.properties
   
   // Extract properties (Deutsche Namen wie in Notion)
   const titleProperty = properties.Titel?.title
-  const slugProperty = properties.Slug?.rich_text
   const dateProperty = properties.Datum?.date
-  const categoryProperty = properties.Kategorie?.select
+  const categoryProperty = properties.Kategorie?.multi_select
   const statusProperty = properties.Veröffentlicht?.checkbox
   const excerptProperty = properties.Beschreibung?.rich_text
   const imageProperty = properties.foto?.files
   
   const title = titleProperty ? extractPlainText(titleProperty) : ''
-  const slug = slugProperty ? extractPlainText(slugProperty) : ''
   const date = dateProperty?.start || new Date().toISOString()
-  const category = categoryProperty?.select?.name || 'Allgemein'
-  const isPublished = statusProperty?.checkbox || false
+  // Use first category if available, otherwise default
+  const category = categoryProperty?.[0]?.name || 'Allgemein'
+  const isPublished = statusProperty || false
   const excerpt = excerptProperty ? extractPlainText(excerptProperty) : ''
+  
+  // Generate slug from title (since Slug property doesn't exist in Notion)
+  const slug = generateSlug(title)
   
   // Get image from files property
   let image = undefined
@@ -307,31 +321,28 @@ export async function getNewsBySlug(slug: string): Promise<NewsEntry | null> {
   }
 
   try {
+    // Get all published entries and filter by generated slug
+    // (since we generate slugs from titles, we can't query by slug directly)
     const response = await notionClient.databases.query({
       database_id: NOTION_DATABASE_ID,
       filter: {
-        and: [
-          {
-            property: 'Slug',
-            rich_text: {
-              equals: slug,
-            },
-          },
-          {
-            property: 'Veröffentlicht',
-            checkbox: {
-              equals: true,
-            },
-          },
-        ],
+        property: 'Veröffentlicht',
+        checkbox: {
+          equals: true,
+        },
       },
     })
 
-    if (response.results.length === 0) {
+    // Find entry with matching slug
+    const page = response.results.find((p: any) => {
+      const title = p.properties.Titel?.title?.[0]?.plain_text || ''
+      return generateSlug(title) === slug
+    })
+
+    if (!page) {
       return null
     }
 
-    const page = response.results[0]
     const entry = mapNotionPage(page)
     
     if (!entry) {
