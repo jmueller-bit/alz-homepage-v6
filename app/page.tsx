@@ -1,5 +1,5 @@
 import { HomePage } from '@/components/home-page'
-import { getLatestNews } from '@/lib/contentful'
+import { getLatestNews } from '@/lib/notion'
 
 export const revalidate = 120
 

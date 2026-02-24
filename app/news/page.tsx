@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { getNews, type NewsEntry } from '@/lib/contentful'
+import { getNews, type NewsEntry } from '@/lib/notion'
 import { formatDate } from '@/lib/utils'
 
 export const metadata: Metadata = {

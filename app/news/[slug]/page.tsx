@@ -4,60 +4,30 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
-import { getNewsBySlug, type NewsEntry } from '@/lib/contentful'
+import { getNewsBySlug, type NewsEntry } from '@/lib/notion'
 import { formatDate } from '@/lib/utils'
 
 interface Props {
   params: { slug: string }
 }
 
-export const metadata: Metadata = {
-  title: 'News',
-  description: 'Aktuelle Neuigkeiten und Termine vom Astrid Lindgren Zentrum.',
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const news: NewsEntry | null = await getNewsBySlug(params.slug)
+  
+  if (!news) {
+    return {
+      title: 'News nicht gefunden',
+    }
+  }
+  
+  return {
+    title: news.title,
+    description: news.excerpt,
+  }
 }
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 120
-
-function renderRichText(content: any) {
-  if (!content) return null
-
-  // If the editor is plain text or already a string
-  if (typeof content === 'string') {
-    return content.split('\n').map((line, idx) => (
-      <p key={idx} className="mt-3 font-serif text-lg text-charcoal/80">
-        {line}
-      </p>
-    ))
-  }
-
-  // Minimal renderer for Contentful Rich Text (paragraphs and headings)
-  const blocks = Array.isArray(content.content) ? content.content : []
-
-  return blocks.map((block: any, blockIndex: number) => {
-    if (block.nodeType === 'paragraph') {
-      const text = (block.content || []).map((c: any) => c.value || '').join('')
-      if (!text.trim()) return null
-      return (
-        <p key={blockIndex} className="mt-3 font-serif text-lg text-charcoal/80">
-          {text}
-        </p>
-      )
-    }
-
-    if (block.nodeType === 'heading-2' || block.nodeType === 'heading-3') {
-      const text = (block.content || []).map((c: any) => c.value || '').join('')
-      const Tag = block.nodeType === 'heading-2' ? 'h2' : 'h3'
-      return (
-        <Tag key={blockIndex} className="mt-6 font-sans text-2xl font-bold text-charcoal">
-          {text}
-        </Tag>
-      )
-    }
-
-    return null
-  })
-}
 
 export default async function NewsDetailPage({ params }: Props) {
   const news: NewsEntry | null = await getNewsBySlug(params.slug)
@@ -108,11 +78,12 @@ export default async function NewsDetailPage({ params }: Props) {
             {news.title}
           </h1>
 
-          <div className="mt-8 font-serif text-lg text-charcoal/80 space-y-3">
-            {renderRichText(news.content) || (
-              <p className="font-serif text-charcoal/70">Der Inhalt dieses Artikels folgt in Kürze.</p>
-            )}
-          </div>
+          <div 
+            className="mt-8 prose prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ 
+              __html: news.contentHtml || '<p>Der Inhalt dieses Artikels folgt in Kürze.</p>' 
+            }}
+          />
 
           <div className="mt-12 pt-8 border-t border-charcoal/10">
             <Button asChild>

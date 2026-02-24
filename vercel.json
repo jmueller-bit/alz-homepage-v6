@@ -1,6 +1,13 @@
 {
+  "name": "alz-homepage-v6",
+  "version": 2,
+  "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
   "outputDirectory": ".next",
-  "framework": "nextjs"
+  "installCommand": "npm install",
+  "regions": ["fra1"],
+  "env": {
+    "NOTION_API_KEY": "@notion-api-key",
+    "NOTION_DATABASE_ID": "31185ad01fa58015a2b0d8a93c3226e1"
+  }
 }
