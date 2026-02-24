@@ -1,6 +1,7 @@
 import { Client } from '@notionhq/client'
 
 const NOTION_DATABASE_ID = '31185ad01fa58015a2b0d8a93c3226e1'
+const NOTION_ABOUT_DATABASE_ID = '31185ad01fa58014b253ef85ad36ab28' // ueberUnsContent Datenbank
 
 // Validate environment variables
 if (!process.env.NOTION_API_KEY) {
@@ -26,6 +27,22 @@ export type NewsEntry = {
   }
   category?: string
   status: 'Published' | 'Draft' | 'Archived'
+}
+
+export type AboutContentEntry = {
+  id: string
+  name: string
+  title: string
+  subtitle?: string
+  content?: string
+  contentHtml?: string
+  image?: {
+    url: string
+    width?: number
+    height?: number
+  }
+  order: number
+  status: 'Published' | 'Draft'
 }
 
 // Helper: Extract plain text from rich text array
@@ -380,3 +397,87 @@ export async function getLatestNews(count: number = 3): Promise<NewsEntry[]> {
 }
 
 export default notionClient
+
+// Helper: Map Notion page to AboutContentEntry
+function mapAboutContentEntry(page: any): AboutContentEntry | null {
+  const properties = page.properties
+  
+  const nameProperty = properties.Name?.title
+  const titleProperty = properties.Titel?.rich_text
+  const subtitleProperty = properties.Untertitel?.rich_text
+  const contentProperty = properties.Content?.rich_text
+  const imageProperty = properties.Bild?.files
+  const orderProperty = properties.Reihenfolge?.number
+  const statusProperty = properties.Veröffentlicht?.checkbox
+  
+  const name = nameProperty ? extractPlainText(nameProperty) : ''
+  const title = titleProperty ? extractPlainText(titleProperty) : ''
+  const subtitle = subtitleProperty ? extractPlainText(subtitleProperty) : ''
+  const content = contentProperty ? extractPlainText(contentProperty) : ''
+  const order = orderProperty || 0
+  const isPublished = statusProperty || false
+  
+  // Get image from files property
+  let image = undefined
+  if (imageProperty && imageProperty.length > 0) {
+    const file = imageProperty[0]
+    const imageUrl = file.file?.url || file.external?.url
+    if (imageUrl) {
+      image = {
+        url: imageUrl,
+        width: undefined,
+        height: undefined,
+      }
+    }
+  }
+  
+  if (!name || !title) {
+    return null
+  }
+  
+  return {
+    id: page.id,
+    name,
+    title,
+    subtitle,
+    content,
+    contentHtml: content ? `<p class="font-serif text-lg text-charcoal/70">${content}</p>` : '',
+    image,
+    order,
+    status: isPublished ? 'Published' : 'Draft',
+  }
+}
+
+// Get all published about content
+export async function getAboutContent(limit = 50): Promise<AboutContentEntry[]> {
+  if (!process.env.NOTION_API_KEY || process.env.NOTION_API_KEY === 'TODO') {
+    return []
+  }
+
+  try {
+    const response = await notionClient.databases.query({
+      database_id: NOTION_ABOUT_DATABASE_ID,
+      filter: {
+        property: 'Veröffentlicht',
+        checkbox: {
+          equals: true,
+        },
+      },
+      sorts: [
+        {
+          property: 'Reihenfolge',
+          direction: 'ascending',
+        },
+      ],
+      page_size: limit,
+    })
+
+    return response.results
+      .map(mapAboutContentEntry)
+      .filter((entry): entry is AboutContentEntry => entry !== null)
+      
+  } catch (error: any) {
+    console.error('Error fetching about content from Notion:', error)
+    return []
+  }
+}
